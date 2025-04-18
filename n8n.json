@@ -1,0 +1,165 @@
+{
+  "name": "ERP AI",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=you are my assistant, my name is aji laksono a.k.a mojila, you got chat from {{ $json.body.phone }} who named {{ $json.body.name }} with message: {{ $json.body.content }}. reply this chat with friendly response in bahasa indonesia only",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        80,
+        0
+      ],
+      "id": "5598b3f2-a0ef-455d-ba4f-f84cdcafdec6",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "gemma3:latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        108,
+        220
+      ],
+      "id": "0c4bc194-1907-434d-85a7-8fa6d690ac0e",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "2zPyYh35pY0Rco54",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.phone }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        300,
+        260
+      ],
+      "id": "4fa7bed2-a723-4969-bd21-b36fc612f883",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "incoming-chat",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -140,
+        0
+      ],
+      "id": "1f85c473-6308-47f1-9d92-2d8717744234",
+      "name": "Webhook",
+      "webhookId": "9ecee47b-5e4f-4e5e-bd25-d0d489a0f981"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8080/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "to",
+              "value": "={{ $('Webhook').item.json.body.phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 1000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        456,
+        0
+      ],
+      "id": "9a308772-2539-417d-a837-870aa94c2ec7",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Ollama Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d402d65-2308-4f3d-ad5e-9c7fc0f420c1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a0db0f8ada21c03d062a39fc8e27acdf2990cee069552c15d0567be7054b1edd"
+  },
+  "id": "QY4bghMMc2v1nbNb",
+  "tags": [
+    {
+      "createdAt": "2025-04-18T13:37:08.173Z",
+      "updatedAt": "2025-04-18T13:37:08.173Z",
+      "id": "RDS7EzNlq2gSWpbv",
+      "name": "research"
+    }
+  ]
+}
